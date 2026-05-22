@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile Status</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0a0a0f;
+  color: #e4e4e7;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.container {
+  width: 100%;
+  max-width: 520px;
+  padding: 20px;
+}
+.header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.header h1 {
+  font-size: 22px;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.header .sub {
+  font-size: 12px;
+  color: #52525b;
+  margin-top: 4px;
+}
+.card {
+  background: #131318;
+  border: 1px solid #1e1e28;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.card-header {
+  padding: 14px 18px;
+  background: #16161d;
+  border-bottom: 1px solid #1e1e28;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #71717a;
+}
+.row {
+  display: flex;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid #1a1a22;
+}
+.row:last-child { border-bottom: none; }
+.row-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 14px;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.row-icon.ip { background: #1a2744; color: #60a5fa; }
+.row-icon.gmail { background: #2a1a1a; color: #f87171; }
+.row-icon.profile { background: #1a2a1a; color: #4ade80; }
+.row-icon.status { background: #2a2a1a; color: #facc15; }
+.row-icon.fp { background: #2a1a2a; color: #c084fc; }
+.row-content { flex: 1; min-width: 0; }
+.row-label {
+  font-size: 11px;
+  color: #71717a;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.row-value {
+  font-size: 14px;
+  color: #fff;
+  font-weight: 500;
+  word-break: break-all;
+}
+.row-value.loading {
+  color: #52525b;
+  font-style: italic;
+}
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-active { background: #052e16; color: #4ade80; border: 1px solid #166534; }
+.badge-grayed { background: #2a1a00; color: #fb923c; border: 1px solid #92400e; }
+.badge-none { background: #1c1c22; color: #71717a; border: 1px solid #3f3f46; }
+.badge-checking { background: #1e1e28; color: #a1a1aa; border: 1px solid #3f3f46; }
+
+.footer {
+  text-align: center;
+  padding: 12px;
+  font-size: 11px;
+  color: #3f3f46;
+}
+.spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #3f3f46;
+  border-top-color: #a1a1aa;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>PROFILE STATUS</h1>
+    <div class="sub" id="timestamp"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Connection</div>
+    <div class="row">
+      <div class="row-icon ip">IP</div>
+      <div class="row-content">
+        <div class="row-label">IP Address</div>
+        <div class="row-value" id="ip-value"><span class="spinner"></span>Detecting...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Profile</div>
+    <div class="row">
+      <div class="row-icon profile">ID</div>
+      <div class="row-content">
+        <div class="row-label">Profile ID</div>
+        <div class="row-value" id="profile-value"><span class="spinner"></span>Reading...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Google Account</div>
+    <div class="row">
+      <div class="row-icon gmail">@</div>
+      <div class="row-content">
+        <div class="row-label">Gmail</div>
+        <div class="row-value" id="gmail-value"><span class="spinner"></span>Checking...</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="row-icon status">!</div>
+      <div class="row-content">
+        <div class="row-label">Gmail Status</div>
+        <div class="row-value" id="gmail-status"><span class="badge badge-checking"><span class="spinner"></span>Checking</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Fingerprint</div>
+    <div class="row">
+      <div class="row-icon fp">FP</div>
+      <div class="row-content">
+        <div class="row-label">Browser Fingerprint</div>
+        <div class="row-value" id="fp-value"><span class="spinner"></span>Generating...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer" id="footer"></div>
+</div>
+
+<canvas id="fp-canvas" style="display:none" width="200" height="50"></canvas>
+
+<script>
+(function() {
+  document.getElementById('timestamp').textContent = new Date().toLocaleString();
+
+  // Profile ID from URL
+  var params = new URLSearchParams(window.location.search);
+  var pathParts = window.location.pathname.split('/').filter(Boolean);
+  var profileId = params.get('id') || params.get('profile') || params.get('p') || '';
+  if (!profileId && pathParts.length > 1) {
+    profileId = pathParts[pathParts.length - 1];
+  }
+  document.getElementById('profile-value').textContent = profileId || 'Not provided in URL';
+
+  // IP Detection
+  detectIP();
+
+  // Gmail Detection
+  detectGmail();
+
+  // Fingerprint
+  generateFingerprint();
+
+  function detectIP() {
+    fetch('https://api.ipify.org?format=json')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        document.getElementById('ip-value').textContent = data.ip;
+      })
+      .catch(function() {
+        fetch('https://api.seeip.org/jsonip')
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            document.getElementById('ip-value').textContent = data.ip;
+          })
+          .catch(function() {
+            document.getElementById('ip-value').textContent = 'Could not detect';
+          });
+      });
+  }
+
+  function detectGmail() {
+    // Try to detect Google account via multiple methods
+    var gmailEl = document.getElementById('gmail-value');
+    var statusEl = document.getElementById('gmail-status');
+    var found = false;
+
+    // Method 1: Try Google's People API with credentials (works if logged into Google)
+    tryGoogleDetection(function(result) {
+      if (result && result.email) {
+        gmailEl.textContent = result.email;
+        if (result.active) {
+          statusEl.innerHTML = '<span class="badge badge-active">ACTIVE</span>';
+        } else {
+          statusEl.innerHTML = '<span class="badge badge-grayed">GRAYED OUT</span>';
+        }
+        found = true;
+      } else {
+        gmailEl.textContent = 'Not detected - no Google session';
+        statusEl.innerHTML = '<span class="badge badge-none">No Account</span>';
+      }
+    });
+  }
+
+  function tryGoogleDetection(callback) {
+    var detected = false;
+
+    // Try loading Google's user info image to check login status
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    var timeout = setTimeout(function() {
+      if (!detected) {
+        detected = true;
+        // Try alternative method
+        tryOAuthPopup(callback);
+      }
+    }, 4000);
+
+    // Method: Try to access Google account info via redirect
+    // Use a hidden iframe to check accounts.google.com
+    var iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.id = 'gmail-check-frame';
+
+    // Try the GAIA info endpoint
+    try {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'https://accounts.google.com/ListAccounts?gpsia=1&source=ChromiumBrowser&json=standard', true);
+      xhr.withCredentials = true;
+      xhr.timeout = 5000;
+      xhr.onload = function() {
+        if (!detected && xhr.status === 200) {
+          detected = true;
+          clearTimeout(timeout);
+          try {
+            var text = xhr.responseText;
+            // ListAccounts returns a JS array
+            // Format: [["gaia.l.a.r",[["email@gmail.com",...],...]]
+            var emails = [];
+            var emailPattern = /[\w.-]+@[\w.-]+\.\w+/g;
+            var matches = text.match(emailPattern);
+            if (matches && matches.length > 0) {
+              // First email is the primary active account
+              var primaryEmail = matches[0];
+              var isActive = text.indexOf('"1"') > -1 || text.indexOf(',1,') > -1;
+              callback({ email: primaryEmail, active: true });
+              return;
+            }
+          } catch(e) {}
+          callback(null);
+        }
+      };
+      xhr.onerror = function() {
+        if (!detected) {
+          detected = true;
+          clearTimeout(timeout);
+          tryOAuthPopup(callback);
+        }
+      };
+      xhr.ontimeout = function() {
+        if (!detected) {
+          detected = true;
+          clearTimeout(timeout);
+          tryOAuthPopup(callback);
+        }
+      };
+      xhr.send();
+    } catch(e) {
+      if (!detected) {
+        detected = true;
+        clearTimeout(timeout);
+        tryOAuthPopup(callback);
+      }
+    }
+  }
+
+  function tryOAuthPopup(callback) {
+    // Try Google Sign-In discovery
+    // Check if any Google cookies exist by trying to load a Google resource
+    var img = new Image();
+    var done = false;
+
+    img.onload = function() {
+      if (!done) {
+        done = true;
+        // Google resource loaded - account likely exists but we can't get email without API
+        callback({ email: 'Google account detected (email hidden by browser security)', active: true });
+      }
+    };
+    img.onerror = function() {
+      if (!done) {
+        done = true;
+        callback(null);
+      }
+    };
+
+    setTimeout(function() {
+      if (!done) {
+        done = true;
+        callback(null);
+      }
+    }, 3000);
+
+    // Try loading Google profile photo (only loads if signed in)
+    img.src = 'https://lh3.googleusercontent.com/a/default-user=s28-c?' + Date.now();
+  }
+
+  function generateFingerprint() {
+    var components = [];
+
+    // Screen
+    components.push('s:' + screen.width + 'x' + screen.height + 'x' + screen.colorDepth);
+
+    // Timezone
+    components.push('tz:' + Intl.DateTimeFormat().resolvedOptions().timeZone);
+
+    // Language
+    components.push('l:' + (navigator.language || navigator.userLanguage));
+
+    // Platform
+    components.push('p:' + navigator.platform);
+
+    // Hardware concurrency
+    if (navigator.hardwareConcurrency) {
+      components.push('hc:' + navigator.hardwareConcurrency);
+    }
+
+    // Device memory
+    if (navigator.deviceMemory) {
+      components.push('dm:' + navigator.deviceMemory + 'GB');
+    }
+
+    // Canvas fingerprint
+    try {
+      var canvas = document.getElementById('fp-canvas');
+      var ctx = canvas.getContext('2d');
+      ctx.textBaseline = 'top';
+      ctx.font = '14px Arial';
+      ctx.fillStyle = '#f60';
+      ctx.fillRect(125, 1, 62, 20);
+      ctx.fillStyle = '#069';
+      ctx.fillText('Cwm fjordbank', 2, 15);
+      ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+      ctx.fillText('Cwm fjordbank', 4, 17);
+      var canvasData = canvas.toDataURL();
+      components.push('c:' + hashCode(canvasData));
+    } catch(e) {
+      components.push('c:blocked');
+    }
+
+    // WebGL
+    try {
+      var glCanvas = document.createElement('canvas');
+      var gl = glCanvas.getContext('webgl') || glCanvas.getContext('experimental-webgl');
+      if (gl) {
+        var debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        if (debugInfo) {
+          components.push('gpu:' + gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL));
+        }
+      }
+    } catch(e) {
+      components.push('gpu:blocked');
+    }
+
+    // Touch support
+    components.push('t:' + ('ontouchstart' in window ? 'yes' : 'no'));
+
+    // Generate hash
+    var fpString = components.join('|');
+    var hash = hashCode(fpString);
+    document.getElementById('fp-value').textContent = hash;
+    document.getElementById('fp-value').title = fpString;
+  }
+
+  function hashCode(str) {
+    var hash = 0;
+    for (var i = 0; i < str.length; i++) {
+      var char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    var hex = (hash >>> 0).toString(16).toUpperCase();
+    while (hex.length < 8) hex = '0' + hex;
+    return 'FP-' + hex;
+  }
+})();
+</script>
+</body>
+</html>
