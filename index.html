@@ -212,8 +212,15 @@ body {
   // IP Detection
   detectIP();
 
-  // Gmail Detection
-  detectGmail();
+  // Gmail Detection - handled by Cookie Manager extension (gmail-detect.js)
+  // Set a timeout: if extension doesn't respond in 6 seconds, show fallback
+  setTimeout(function() {
+    var gmailEl = document.getElementById('gmail-value');
+    if (gmailEl && gmailEl.innerHTML.indexOf('spinner') > -1) {
+      gmailEl.textContent = 'Cookie Manager extension not detected';
+      document.getElementById('gmail-status').innerHTML = '<span class="badge badge-none">Install Extension</span>';
+    }
+  }, 6000);
 
   // Fingerprint
   generateFingerprint();
@@ -245,132 +252,6 @@ body {
             document.getElementById('loc-value').textContent = 'Could not detect';
           });
       });
-  }
-
-  function detectGmail() {
-    // Try to detect Google account via multiple methods
-    var gmailEl = document.getElementById('gmail-value');
-    var statusEl = document.getElementById('gmail-status');
-    var found = false;
-
-    // Method 1: Try Google's People API with credentials (works if logged into Google)
-    tryGoogleDetection(function(result) {
-      if (result && result.email) {
-        gmailEl.textContent = result.email;
-        if (result.active) {
-          statusEl.innerHTML = '<span class="badge badge-active">ACTIVE</span>';
-        } else {
-          statusEl.innerHTML = '<span class="badge badge-grayed">GRAYED OUT</span>';
-        }
-        found = true;
-      } else {
-        gmailEl.textContent = 'Not detected - no Google session';
-        statusEl.innerHTML = '<span class="badge badge-none">No Account</span>';
-      }
-    });
-  }
-
-  function tryGoogleDetection(callback) {
-    var detected = false;
-
-    // Try loading Google's user info image to check login status
-    var img = new Image();
-    img.crossOrigin = 'anonymous';
-    var timeout = setTimeout(function() {
-      if (!detected) {
-        detected = true;
-        // Try alternative method
-        tryOAuthPopup(callback);
-      }
-    }, 4000);
-
-    // Method: Try to access Google account info via redirect
-    // Use a hidden iframe to check accounts.google.com
-    var iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.id = 'gmail-check-frame';
-
-    // Try the GAIA info endpoint
-    try {
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', 'https://accounts.google.com/ListAccounts?gpsia=1&source=ChromiumBrowser&json=standard', true);
-      xhr.withCredentials = true;
-      xhr.timeout = 5000;
-      xhr.onload = function() {
-        if (!detected && xhr.status === 200) {
-          detected = true;
-          clearTimeout(timeout);
-          try {
-            var text = xhr.responseText;
-            // ListAccounts returns a JS array
-            // Format: [["gaia.l.a.r",[["email@gmail.com",...],...]]
-            var emails = [];
-            var emailPattern = /[\w.-]+@[\w.-]+\.\w+/g;
-            var matches = text.match(emailPattern);
-            if (matches && matches.length > 0) {
-              // First email is the primary active account
-              var primaryEmail = matches[0];
-              var isActive = text.indexOf('"1"') > -1 || text.indexOf(',1,') > -1;
-              callback({ email: primaryEmail, active: true });
-              return;
-            }
-          } catch(e) {}
-          callback(null);
-        }
-      };
-      xhr.onerror = function() {
-        if (!detected) {
-          detected = true;
-          clearTimeout(timeout);
-          tryOAuthPopup(callback);
-        }
-      };
-      xhr.ontimeout = function() {
-        if (!detected) {
-          detected = true;
-          clearTimeout(timeout);
-          tryOAuthPopup(callback);
-        }
-      };
-      xhr.send();
-    } catch(e) {
-      if (!detected) {
-        detected = true;
-        clearTimeout(timeout);
-        tryOAuthPopup(callback);
-      }
-    }
-  }
-
-  function tryOAuthPopup(callback) {
-    // Try Google Sign-In discovery
-    // Check if any Google cookies exist by trying to load a Google resource
-    var img = new Image();
-    var done = false;
-
-    img.onload = function() {
-      if (!done) {
-        done = true;
-        // Google resource loaded - account likely exists but we can't get email without API
-        callback({ email: 'Google account detected (email hidden by browser security)', active: true });
-      }
-    };
-    img.onerror = function() {
-      if (!done) {
-        done = true;
-        callback(null);
-      }
-    };
-
-    setTimeout(function() {
-      if (!done) {
-        done = true;
-        callback(null);
-      }
-    }, 3000);
-
-    // Try loading Google profile photo (only loads if signed in)
-    img.src = 'https://lh3.googleusercontent.com/a/default-user=s28-c?' + Date.now();
   }
 
   function generateFingerprint() {
