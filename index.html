@@ -71,6 +71,7 @@ body {
   flex-shrink: 0;
 }
 .row-icon.ip { background: #1a2744; color: #60a5fa; }
+.row-icon.loc { background: #1a3a2a; color: #34d399; }
 .row-icon.gmail { background: #2a1a1a; color: #f87171; }
 .row-icon.profile { background: #1a2a1a; color: #4ade80; }
 .row-icon.status { background: #2a2a1a; color: #facc15; }
@@ -139,6 +140,13 @@ body {
       <div class="row-content">
         <div class="row-label">IP Address</div>
         <div class="row-value" id="ip-value"><span class="spinner"></span>Detecting...</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="row-icon loc">&#9872;</div>
+      <div class="row-content">
+        <div class="row-label">Location</div>
+        <div class="row-value" id="loc-value"><span class="spinner"></span>Locating...</div>
       </div>
     </div>
   </div>
@@ -211,19 +219,30 @@ body {
   generateFingerprint();
 
   function detectIP() {
-    fetch('https://api.ipify.org?format=json')
+    fetch('https://ipwho.is/')
       .then(function(r) { return r.json(); })
       .then(function(data) {
-        document.getElementById('ip-value').textContent = data.ip;
+        if (data.success !== false && data.ip) {
+          document.getElementById('ip-value').textContent = data.ip;
+          var parts = [];
+          if (data.city) parts.push(data.city);
+          if (data.region) parts.push(data.region);
+          if (data.country) parts.push(data.country);
+          document.getElementById('loc-value').textContent = parts.join(', ') || 'Unknown';
+        } else {
+          throw new Error('fail');
+        }
       })
       .catch(function() {
-        fetch('https://api.seeip.org/jsonip')
+        fetch('https://api.ipify.org?format=json')
           .then(function(r) { return r.json(); })
           .then(function(data) {
             document.getElementById('ip-value').textContent = data.ip;
+            document.getElementById('loc-value').textContent = 'Location unavailable';
           })
           .catch(function() {
             document.getElementById('ip-value').textContent = 'Could not detect';
+            document.getElementById('loc-value').textContent = 'Could not detect';
           });
       });
   }
